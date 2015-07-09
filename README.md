@@ -38,9 +38,16 @@ Add router mixin:
     var Router = Ember.Router.extend(AnalyticsTransitionRouterMixin, {
     });
 
-Add Tracking ID to your production environment configuration:
+Add Tracking ID to your production environment configuration and setup content security policy:
 
     // config/environment.js
+
+    ENV.contentSecurityPolicy: {
+      // ...
+      'script-src': "'self' www.google-analytics.com",
+      'img-src': "'self' www.google-analytics.com"
+    },
+
     if(environment === 'production') {
       ENV.APP.trackingId = 'UA-0000000-00';
     }
