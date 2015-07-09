@@ -1,6 +1,6 @@
 {
   "name": "@ampatspell/ember-cli-analytics",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Basic Google Analytics ember-cli addon",
   "directories": {
     "doc": "doc",
