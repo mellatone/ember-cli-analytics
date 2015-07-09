@@ -8,6 +8,7 @@ export default {
       return;
     }
     Ember.onerror = function(error) {
+      console.error(error);
       var url = window.location.pathname;
       analytics.notifyError(url, error);
     };
