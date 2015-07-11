@@ -44,6 +44,16 @@ export default Ember.Service.extend({
     ga('send', type, args);
   },
 
+  event: function(category, action, label) {
+    if(this.get('debug')) {
+      console.debug('ember-cli-analytics send event', category, action, label);
+    }
+    if(!window.ga) {
+      return;
+    }
+    ga('send', 'event', category, action, label);
+  },
+
   notifyTransition: function(url) {
     this.send('pageview', {
       page: url,
