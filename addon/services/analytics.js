@@ -1,34 +1,10 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import Settings from '../models/settings';
 
-// http://diveintohtml5.info/storage.html
-function hasLocalStorage() {
-  try {
-    return 'localStorage' in window && window['localStorage'] !== null;
-  } catch (e) {
-    return false;
-  }
-}
-
-function localStorageLoad(key) {
-  if(hasLocalStorage()) {
-    try {
-      return window.localStorage.getItem(key);
-    } catch(e) {
-      console.error("Failed to load " + key + " from local storage", e);
-    }
-  }
-}
-
-function localStorageSave(key, value) {
-  if(hasLocalStorage()) {
-    try {
-      window.localStorage.setItem(key, value);
-    } catch(e) {
-      console.error("Failed to save " + key + " in local storage", e);
-    }
-  }
-}
+const {
+  computed
+} = Ember;
 
 export default Ember.Service.extend({
 
@@ -36,14 +12,31 @@ export default Ember.Service.extend({
     name: 'untitled',
     version: '0.0.0',
   },
+
   trackingId: null,
   trackErrors: false,
-  debug: false,
 
-  userId: null,
-  userIdLocalStorageKey: 'ember-cli-analytics/userid',
+  settings: computed(function() {
+    this.__settings = this.__settings || Settings.create();
+    return this.__settings;
+  }),
+
+  userId: computed('settings.userId', {
+    get: function() {
+      return this.get('settings.userId');
+    },
+    set: function(key, value) {
+      this.set('settings.userId', value);
+      return value;
+    }
+  }),
 
   insertScript: function(id) {
+    this.log('ember-cli-analytics trackingID', id);
+
+    var userId = this.get('settings.userId');
+    this.log('ember-cli-analytics initial userId', userId);
+
     if(!id) {
       return;
     }
@@ -55,54 +48,33 @@ export default Ember.Service.extend({
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
     /* jshint ignore:end */
 
-    var userId = this.get('userId');
-
     /* global ga */
     ga('create', id, userId || 'auto');
   },
 
-  userIdDidChange: function() {
-    var userId = this.get('userId');
-    this.saveUserId();
-
-    if(this.get('debug')) {
-      console.debug('ember-cli-analytics userID', userId);
+  log: function() {
+    if(!this.get('settings.debug')) {
+      return;
     }
+    console.debug.apply(console, arguments);
+  },
 
+  userIdDidChange: function() {
+    var userId = this.get('settings.userId');
+    this.log('ember-cli-analytics userId', userId);
     if(!window.ga || !userId) {
       return;
     }
-    
     ga('set', 'userId', userId);
-  }.observes('userId'),
-
-  loadUserId: function() {
-    return localStorageLoad(this.get('userIdLocalStorageKey'));
-  },
-
-  saveUserId: function() {
-    localStorageSave(this.get('userIdLocalStorageKey'), this.get('userId'));
-  },
+  }.observes('settings.userId'),
 
   prepare: function() {
     var id = this.get('trackingId');
-    
-    if(this.get('debug')) {
-      console.debug('ember-cli-analytics trackingID', id);
-    }
-    
-    if(!this.get('userId')) {
-      var userId = this.loadUserId();
-      this.set('userId', userId);
-    }
-
     this.insertScript(id);
   }.on('init'),
 
   send: function(type, args) {
-    if(this.get('debug')) {
-      console.debug('ember-cli-analytics send', type, args);
-    }
+    this.log('ember-cli-analytics send', type, args);
     if(!window.ga) {
       return;
     }
@@ -110,9 +82,7 @@ export default Ember.Service.extend({
   },
 
   event: function(category, action, label) {
-    if(this.get('debug')) {
-      console.debug('ember-cli-analytics send event', category, action, label);
-    }
+    this.log('ember-cli-analytics send event', category, action, label);
     if(!window.ga) {
       return;
     }
