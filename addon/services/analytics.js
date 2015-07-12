@@ -49,7 +49,11 @@ export default Ember.Service.extend({
     /* jshint ignore:end */
 
     /* global ga */
-    ga('create', id, userId || 'auto');
+    if(userId) {
+      ga('create', id, {'userId': userId});
+    } else {
+      ga('create', id, 'auto');
+    }
   },
 
   log: function() {
