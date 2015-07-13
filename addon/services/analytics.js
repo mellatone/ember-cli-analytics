@@ -69,7 +69,7 @@ export default Ember.Service.extend({
     if(!window.ga || !userId) {
       return;
     }
-    ga('set', 'userId', userId);
+    ga('set', '&uid', userId);
   }.observes('settings.userId'),
 
   prepare: function() {
