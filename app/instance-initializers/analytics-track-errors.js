@@ -3,7 +3,7 @@ import Ember from 'ember';
 export default {
   name: 'analytics-track-errors',
   initialize: function(app) {
-    var analytics = app.container.lookup('service:analytics');
+    var analytics = app.lookup('service:analytics');
     if(!analytics.get('trackErrors')) {
       return;
     }
